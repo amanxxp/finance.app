@@ -1,0 +1,20 @@
+{
+  "version": "5",
+  "dialect": "pg",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1719781204463,
+      "tag": "0000_tiny_zaran",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1719782606915,
+      "tag": "0001_tricky_vapor",
+      "breakpoints": true
+    }
+  ]
+}
