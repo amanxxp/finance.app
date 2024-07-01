@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import {ClerkProvider} from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
-import {QueryProviders} from "@/providers/query-provider"
+import { QueryProviders } from "@/providers/query-provider";
+import { SheetProvider } from "@/providers/sheet-provider";
+import { Toaster } from "@/components/ui/sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -18,12 +20,14 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-      <body className={inter.className}>
-        <QueryProviders>
-        {children}
-        </QueryProviders>
-      </body>
-    </html>
+        <body className={inter.className}>
+          <QueryProviders>
+            <SheetProvider />
+            <Toaster />
+            {children}
+          </QueryProviders>
+        </body>
+      </html>
     </ClerkProvider>
   );
 }
