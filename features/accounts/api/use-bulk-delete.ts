@@ -5,7 +5,7 @@ import {client} from "@/lib/hono";
 import { toast } from "sonner";
 
 type ResponseType = InferResponseType<typeof client.api.accounts["bulk-delete"]["$post"]>;
-type RequestType = InferRequestType<typeof client.api.accounts["bulk-delete"]["$post"]>;
+type RequestType = InferRequestType<typeof client.api.accounts["bulk-delete"]["$post"]>["json"];
 
 export const useBulkDeleteAccount = () =>{
     const queryClient = useQueryClient();

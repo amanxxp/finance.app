@@ -18,13 +18,14 @@ const formSchema = insertAccountSchema.pick({
 type FormValue = z.input<typeof formSchema>;
 
 export const NewAccountSheet = () => {
- const {isOpen, onClose} = useNewAccount();
+
+ const {isOpen, onClose} = useNewAccount();//used this because every time we refresh the sheet element comes, but we want it to come only when we click the button 
  const mutation = useCreateAccount();
 
  const onSubmit = (values: FormValue) => {
      mutation.mutate(values,{
       onSuccess:()=>{
-        onClose();
+        onClose(); // this will close the add account sheet automatically after the onsuccess methord
       }
      })
  };

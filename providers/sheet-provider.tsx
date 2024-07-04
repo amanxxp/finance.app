@@ -7,7 +7,7 @@ export const SheetProvider =()=>{
     const [isMounted , setIsMounted] = useState(false);
     useEffect(()=>{
         setIsMounted(true);
-    },[]);
+    },[]);  //for fixing hydration error 
     if(!isMounted) return true;
     return (
         <>

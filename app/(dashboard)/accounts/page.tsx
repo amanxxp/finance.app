@@ -11,9 +11,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useBulkDeleteAccount } from "@/features/accounts/api/use-bulk-delete";
 
 const AccountsPage = () => {
-  const newAccount = useNewAccount();
-  const accountQuery = useGetAccounts();
-  const accounts = accountQuery.data || [];
+  const newAccount = useNewAccount(); // for toggle between the sheet component for adding new account
+  const accountQuery = useGetAccounts();  // get all the accounts 
+  const accounts = accountQuery.data || []; 
   const deleteAccounts = useBulkDeleteAccount();
 
   const isDisabled = accountQuery.isLoading || deleteAccounts.isPending;
@@ -26,7 +26,7 @@ const AccountsPage = () => {
             <Skeleton className="h-8 w-28" />
             <CardContent>
               <div className="h-[500px] w-full flex items-center justify-center">
-                <Loader2 className="size-6 text-slate-300 animate-spin" />
+                <Loader2 className="size-6 text-black animate-spin" />
               </div>
             </CardContent>
           </CardHeader>

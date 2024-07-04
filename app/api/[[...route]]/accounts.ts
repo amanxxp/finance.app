@@ -26,8 +26,8 @@ const app = new Hono()
       "json",
       insertAccountSchema.pick({
         name: true,
-      })
-    ),
+      }) // i  want that only name field is passed through this json object 
+    ),// zod validation that what kind of json can this post request accept
     async (c) => {
       const auth = getAuth(c);
       const values = c.req.valid("json");
@@ -52,7 +52,7 @@ const app = new Hono()
       "json",
       z.object({
         ids: z.array(z.string()),
-      }),
+      }), // in last request we added the schema in zod for validation this time we deifne our own z object
      ),
     async (c) => {
       const auth = getAuth(c);

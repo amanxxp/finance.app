@@ -7,11 +7,17 @@ import { ArrowUpDown } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {client} from "@/lib/hono";
 
-// in search function how can you implement like if you search for some particular keyword in server data and only render that particluar key word data
+// export type Payment ={
+//   data:{
+//     id:string;
+//     name:string;
+//   }[];
+// }
 
+// instead we can do this 
 export type ResponseType = InferResponseType<typeof client.api.accounts.$get, 200>
 
-export const columns: ColumnDef<ResponseType>[] = [
+export const columns: ColumnDef</*Payment ||*/ResponseType>[] = [ 
   {
     id: "select",
     header: ({ table }) => (

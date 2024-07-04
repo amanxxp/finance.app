@@ -19,3 +19,4 @@ const main = async () =>{
 };
 
 main();
+// this script will not be run by the nextjs this will be run by us so that we can migrate the schemas
