@@ -10,7 +10,8 @@ const routes = app.route("/accounts",accounts);
 
 export const GET = handle(app);
 export const POST = handle(app);
-
+export const PATCH = handle(app);
+export const DELETE = handle(app);
 export type AppType  = typeof routes; // enable rpc, rcp help in end to end type safety , it will be useful when we combine with it react-query
 
 //for line number 11
