@@ -2,13 +2,14 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 
-//can also use type props ={};
-interface Props{
+
+type Props = {
   href: string;
   label: string;
   isActive?: boolean;
 };
-export const NavButton = ({href, label, isActive}: Props) => {
+
+export const NavButton = ({ href, label, isActive }: Props) => {
   return (
     <Button
       asChild

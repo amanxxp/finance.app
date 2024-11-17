@@ -8,7 +8,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import { Menu } from "lucide-react";
-import Image from "next/image";
 
 const routes = [
   {
@@ -16,7 +15,7 @@ const routes = [
     label: "Overview",
   },
   {
-    href: "/transaction",
+    href: "/transactions",
     label: "Transactions",
   },
   {
@@ -45,36 +44,28 @@ export const Navigation = () => {
   };
   if (isMobile) {
     return (
-      <>
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetTrigger>
-            <Button
-              variant={"outline"}
-              size={"sm"}
-              className="font-normal bg-white/10 hover:bg-white/20 hover:text-white border-none focus-visible:ring-offset-0 focus-visible:ring-transparent outline-none  focus:bg-white/30 transition"
-            >
-              <Menu className="size-4" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side={"left"} className="px-2">
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetTrigger>
+          <Button
+            variant={"outline"}
+            size={"sm"}
+            className="font-normal bg-white/10 hover:bg-white/20 hover:text-white border-none focus-visible:ring-offset-0 focus-visible:ring-transparent outline-none  focus:bg-white/30 transition"
+          >
+            <Menu className="size-4"/>
+          </Button>
+        </SheetTrigger>
+        <SheetContent side={"left"} className="px-2">
             <nav className="flex flex-col gap-y-2 pt-6">
-              {routes.map((route) => (
-                <Button
-                  key={route.href}
-                  variant={route.href === pathname ? "secondary" : "ghost"}
-                  onClick={() => onClick(route.href)}
-                  className="w-full justify-start"
-                >
-                  {route.label}
-                </Button>
-              ))}
+            {routes.map((route)=>(
+                <Button key={route.href} variant={route.href === pathname?"secondary":"ghost"}
+                onClick={()=> onClick(route.href)}
+                className="w-full justify-start"
+                >{route.label}</Button>
+            ))}
             </nav>
-          </SheetContent>
-        </Sheet>
-        <div className="items-center ">
-          <p className="font-semibold text-white text-2xl ml-2.5">finance.io</p>
-        </div>
-      </>
+             
+        </SheetContent>
+      </Sheet>
     );
   }
 
