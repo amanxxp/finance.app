@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import { handle } from "hono/vercel";
 import accounts from "./accounts";
 import { HTTPException } from "hono/http-exception";
@@ -11,22 +12,32 @@ export const runtime = "edge";
 
 const app = new Hono().basePath("/api");
 
-app.onError((err,c)=>{
-    if(err instanceof HTTPException){
-        return err.getResponse();
-    }
-    return c.json({error: "Internal error"}, 500)
-})
+// Enable CORS globally
+app.use(
+  "/*",
+  cors({
+    origin: "*", // Replace '*' with specific origins for security in production
+  })
+);
+
+// Global error handler
+app.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    return err.getResponse();
+  }
+  return c.json({ error: "Internal error" }, 500);
+});
+
+// Mount routes
 const routes = app
-.route("/accounts", accounts)
-.route("/categories", categories)
-.route("transactions", transactions)
-.route("/summary", summary);
+  .route("/accounts", accounts)
+  .route("/categories", categories)
+  .route("/transactions", transactions)
+  .route("/summary", summary);
 
 export const GET = handle(app);
 export const POST = handle(app);
 export const PATCH = handle(app);
 export const DELETE = handle(app);
-
 
 export type AppType = typeof routes;
