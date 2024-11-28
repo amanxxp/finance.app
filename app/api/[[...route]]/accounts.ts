@@ -57,8 +57,6 @@ const app = new Hono()
   .get(
     "/:id",cors({
       origin: "*", // Allow all origins
-      allowMethods: ["GET", "POST", "PATCH", "DELETE"],
-      allowHeaders: ["Content-Type", "Authorization"],
     }),
     zValidator(
       "param",

@@ -15,9 +15,7 @@ const app = new Hono().basePath("/api");
 app.use(
     "/*",
     cors({
-      origin: "https://finance-lnp17q3ri-amanxxps-projects.vercel.app", // Allow your frontend origin
-      allowMethods: ["GET", "POST", "PATCH", "DELETE"], // Specify allowed HTTP methods
-      allowHeaders: ["Content-Type", "Authorization"], // Include any custom headers
+      origin: "*", // Allow your frontend origin
       credentials: true, // If you're sending cookies or credentials
     })
   );
