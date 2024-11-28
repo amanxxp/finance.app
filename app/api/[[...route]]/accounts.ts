@@ -16,9 +16,12 @@ const app = new Hono()
     allowHeaders: ["Content-Type", "Authorization"],
   }),clerkMiddleware(), async (c) => {
     const auth = getAuth(c);
+    console.log("user is here");
+    console.log(auth);
     if (!auth?.userId) {
       return c.json({ error: "Unauthorized" }, 401);
     }
+
     const data = await db
       .select({
         id: accounts.id,
