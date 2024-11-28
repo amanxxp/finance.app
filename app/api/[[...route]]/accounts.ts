@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors"; 
 import { db } from "@/db/drizzle";
 import { accounts, insertAccountSchema } from "@/db/schema";
 import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
@@ -7,8 +8,19 @@ import { createId } from "@paralleldrive/cuid2";
 import { zValidator } from "@hono/zod-validator";
 import { array, z } from "zod";
 
-const app = new Hono()
+const app = new Hono();
 
+// Add CORS middleware
+app.use(
+  "*", // Apply to all routes
+  cors({
+    origin: "*", // Allow all origins. Modify this to restrict access if needed
+    allowMethods:  ["GET", "POST", "PATCH", "DELETE"], 
+    allowHeaders:  ["Content-Type", "Authorization"],
+  })
+);
+
+app
   .get("/", clerkMiddleware(), async (c) => {
     const auth = getAuth(c);
     if (!auth?.userId) {
@@ -85,7 +97,6 @@ const app = new Hono()
         ids: z.array(z.string()),
       })
     ),
-
     async (c) => {
       const auth = getAuth(c);
       const values = c.req.valid("json");
