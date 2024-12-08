@@ -11,6 +11,7 @@ export default function Page() {
           <p className="text-base text-[#7E8CA0]">
             Log in or Create account to get back to your dashboard.
           </p>
+          
         </div>
         <div className="flex items-center justify-center mt-8">
           <ClerkLoaded>

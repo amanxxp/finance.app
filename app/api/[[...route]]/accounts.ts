@@ -10,11 +10,7 @@ import { array, z } from "zod";
 
 const app = new Hono()
 
-  .get("/", cors({
-    origin: "*", // Allow all origins
-    allowMethods: ["GET", "POST", "PATCH", "DELETE"],
-    allowHeaders: ["Content-Type", "Authorization"],
-  }),clerkMiddleware(), async (c) => {
+  .get("/",clerkMiddleware(), async (c) => {
     const auth = getAuth(c);
     console.log("user is here");
     console.log(auth);
@@ -32,11 +28,7 @@ const app = new Hono()
     return c.json({ data });
   })
   .post(
-    "/",cors({
-      origin: "*", // Allow all origins
-      allowMethods: ["GET", "POST", "PATCH", "DELETE"],
-      allowHeaders: ["Content-Type", "Authorization"],
-    }),
+    "/",
     clerkMiddleware(),
     zValidator("json", insertAccountSchema.pick({ name: true })),
     async (c) => {
@@ -58,9 +50,7 @@ const app = new Hono()
     }
   )
   .get(
-    "/:id",cors({
-      origin: "*", // Allow all origins
-    }),
+    "/:id",
     zValidator(
       "param",
       z.object({
@@ -91,11 +81,7 @@ const app = new Hono()
     }
   )
   .post(
-    "/bulk-delete",cors({
-      origin: "*", // Allow all origins
-      allowMethods: ["GET", "POST", "PATCH", "DELETE"],
-      allowHeaders: ["Content-Type", "Authorization"],
-    }),
+    "/bulk-delete",
     clerkMiddleware(),
     zValidator(
       "json",
@@ -125,11 +111,7 @@ const app = new Hono()
     }
   )
   .patch(
-    "/:id",cors({
-      origin: "*", // Allow all origins
-      allowMethods: ["GET", "POST", "PATCH", "DELETE"],
-      allowHeaders: ["Content-Type", "Authorization"],
-    }),
+    "/:id",
     clerkMiddleware(),
     zValidator(
       "param",
@@ -165,11 +147,7 @@ const app = new Hono()
     }
   )
   .delete(
-    "/:id",cors({
-      origin: "*", // Allow all origins
-      allowMethods: ["GET", "POST", "PATCH", "DELETE"],
-      allowHeaders: ["Content-Type", "Authorization"],
-    }),
+    "/:id",
     clerkMiddleware(),
     zValidator(
       "param",
