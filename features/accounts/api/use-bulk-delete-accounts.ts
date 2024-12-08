@@ -16,18 +16,32 @@ export const useBulkDeleteAccounts = () => {
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async (json) => {
-      const response = await client.api.accounts["bulk-delete"]["$post"]({
-        json,
-      });
+      const token = localStorage.getItem("finance-token"); // Retrieve token from localStorage
+
+      // Send the bulk-delete request with the Authorization header
+      const response = await client.api.accounts["bulk-delete"]["$post"](
+        { json },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Attach Bearer token
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete accounts.");
+      }
+
       return await response.json();
     },
     onSuccess: () => {
-      toast.success("Account deleted");
+      toast.success("Accounts deleted");
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
     },
     onError: () => {
       toast.error("Failed to delete accounts.");
     },
   });
+
   return mutation;
 };

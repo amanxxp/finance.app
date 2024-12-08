@@ -1,6 +1,5 @@
 import { InferRequestType, InferResponseType } from "hono";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
 import { client } from "@/lib/hono";
 import { toast } from "sonner";
 
@@ -16,10 +15,25 @@ export const useEditAccount = (id?: string) => {
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async (json) => {
-      const response = await client.api.accounts[":id"]["$patch"]({
-        json,
-        param: { id },
-      });
+      const token = localStorage.getItem("finance-token"); // Get the token dynamically
+
+      // Using the options parameter to set headers
+      const response = await client.api.accounts[":id"]["$patch"](
+        {
+          json,
+          param: { id },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to update account.");
+      }
+
       return await response.json();
     },
     onSuccess: () => {
@@ -28,8 +42,9 @@ export const useEditAccount = (id?: string) => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
     },
     onError: () => {
-      toast.error("Failed to create an account.");
+      toast.error("Failed to update account.");
     },
   });
+
   return mutation;
 };

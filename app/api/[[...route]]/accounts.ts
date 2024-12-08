@@ -1,22 +1,45 @@
 import { Hono } from "hono";
-import {cors} from "hono/cors"
 import { db } from "@/db/drizzle";
 import { accounts, insertAccountSchema } from "@/db/schema";
-import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { and, eq, inArray } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import { zValidator } from "@hono/zod-validator";
+import jwt from "jsonwebtoken";
 import { array, z } from "zod";
+const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
+interface decoded {
+  userId: string;
+}
+let decoded: any;
+// Middleware to verify JWT and extract user ID
+const verifyJWT = async (c: any, next: Function) => {
+  const authHeader = c.req.header("Authorization");
+
+  if (!authHeader || !authHeader.startsWith("Bearer")) {
+    return c.json({ error: "Unauthorized - No token provided" }, 401);
+  }
+
+  const token = authHeader.split(" ")[1];
+  console.log(token);
+  try {
+    decoded = jwt.verify(token, JWT_SECRET) as decoded;
+    c.set("userId", decoded.userId); // Attach user ID to the context
+    console.log(decoded.userId);
+    await next();
+  } catch (error) {
+    return c.json({ error: "Unauthorized - Invalid token" }, 401);
+  }
+};
 const app = new Hono()
 
-  .get("/",clerkMiddleware(), async (c) => {
-    const auth = getAuth(c);
+  .get("/", verifyJWT, async (c) => {
+    const user = decoded.userId;
     console.log("user is here");
-    console.log(auth);
-    if (!auth?.userId) {
-      return c.json({ error: "Unauthorized" }, 401);
-    }
+    console.log(user);
+    // if (!user?.userId) {
+    //   return c.json({ error: "Unauthorized" }, 401);
+    // }
 
     const data = await db
       .select({
@@ -24,24 +47,22 @@ const app = new Hono()
         name: accounts.name,
       })
       .from(accounts)
-      .where(eq(accounts.userId, auth.userId));
+      .where(eq(accounts.userId, user));
     return c.json({ data });
   })
   .post(
     "/",
-    clerkMiddleware(),
+    verifyJWT,
     zValidator("json", insertAccountSchema.pick({ name: true })),
     async (c) => {
-      const auth = getAuth(c);
+      const userid = decoded.userId;
       const values = c.req.valid("json");
-      if (!auth?.userId) {
-        return c.json({ error: "Unauthorized" }, 401);
-      }
+
       const [data] = await db
         .insert(accounts)
         .values({
           id: createId(),
-          userId: auth.userId,
+          userId: userid,
           ...values,
         })
         .returning();
@@ -57,15 +78,12 @@ const app = new Hono()
         id: z.string().optional(),
       })
     ),
-    clerkMiddleware(),
+    verifyJWT,
     async (c) => {
-      const auth = getAuth(c);
+      const userid = decoded.userId;
       const { id } = c.req.valid("param");
       if (!id) {
         return c.json({ error: "missing id" }, 400);
-      }
-      if (!auth?.userId) {
-        return c.json({ error: "Unauthorized" }, 401);
       }
       const [data] = await db
         .select({
@@ -73,7 +91,7 @@ const app = new Hono()
           name: accounts.name,
         })
         .from(accounts)
-        .where(and(eq(accounts.userId, auth.userId), eq(accounts.id, id)));
+        .where(and(eq(accounts.userId, userid), eq(accounts.id, id)));
       if (!data) {
         return c.json({ error: "Not found" }, 401);
       }
@@ -82,7 +100,7 @@ const app = new Hono()
   )
   .post(
     "/bulk-delete",
-    clerkMiddleware(),
+    verifyJWT,
     zValidator(
       "json",
       z.object({
@@ -91,16 +109,13 @@ const app = new Hono()
     ),
 
     async (c) => {
-      const auth = getAuth(c);
+      const userid = decoded.userId;
       const values = c.req.valid("json");
-      if (!auth?.userId) {
-        return c.json({ error: "Unauthorized" }, 401);
-      }
       const data = await db
         .delete(accounts)
         .where(
           and(
-            eq(accounts.userId, auth.userId),
+            eq(accounts.userId, userid),
             inArray(accounts.id, values.ids)
           )
         )
@@ -112,7 +127,7 @@ const app = new Hono()
   )
   .patch(
     "/:id",
-    clerkMiddleware(),
+    verifyJWT,
     zValidator(
       "param",
       z.object({
@@ -126,19 +141,17 @@ const app = new Hono()
       })
     ),
     async (c) => {
-      const auth = getAuth(c);
+      const userid = decoded.userId;
       const { id } = c.req.valid("param");
       const values = c.req.valid("json");
       if (!id) {
         return c.json({ error: "Missing id" }, 401);
       }
-      if (!auth?.userId) {
-        return c.json({ error: "Unauthorized" }, 401);
-      }
+      
       const [data] = await db
         .update(accounts)
         .set(values)
-        .where(and(eq(accounts.userId, auth.userId), eq(accounts.id, id)))
+        .where(and(eq(accounts.userId, userid), eq(accounts.id, id)))
         .returning();
       if (!data) {
         return c.json({ error: "Not found" }, 404);
@@ -148,7 +161,7 @@ const app = new Hono()
   )
   .delete(
     "/:id",
-    clerkMiddleware(),
+    verifyJWT,
     zValidator(
       "param",
       z.object({
@@ -156,17 +169,15 @@ const app = new Hono()
       })
     ),
     async (c) => {
-      const auth = getAuth(c);
+      const userid = decoded.userId;
       const { id } = c.req.valid("param");
       if (!id) {
         return c.json({ error: "Missing id" }, 401);
       }
-      if (!auth?.userId) {
-        return c.json({ error: "Unauthorized" }, 401);
-      }
+     
       const [data] = await db
         .delete(accounts)
-        .where(and(eq(accounts.userId, auth.userId), eq(accounts.id, id)))
+        .where(and(eq(accounts.userId,userid), eq(accounts.id, id)))
         .returning({
           id: accounts.id,
         });

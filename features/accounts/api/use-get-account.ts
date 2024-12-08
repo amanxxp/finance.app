@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-
 import { client } from "@/lib/hono";
 
 export const useGetAccount = (id?: string) => {
@@ -7,15 +6,26 @@ export const useGetAccount = (id?: string) => {
     enabled: !!id,
     queryKey: ["account", { id }],
     queryFn: async () => {
-      const response = await client.api.accounts[":id"].$get({
-        param: { id },
-      });
+      const token = localStorage.getItem("finance-token"); // Get the token dynamically
+
+      // Using the options parameter to set headers
+      const response = await client.api.accounts[":id"].$get(
+        { param: { id } }, 
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
       if (!response.ok) {
         throw new Error("Failed to fetch account.");
       }
+
       const { data } = await response.json();
       return data;
     },
   });
+
   return query;
 };

@@ -12,7 +12,22 @@ export const useCreateAccount = () => {
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async (json) => {
-      const response = await client.api.accounts.$post({ json });
+      const token = localStorage.getItem("finance-token"); // Retrieve token from localStorage
+
+      // Send the POST request with the Authorization header
+      const response = await client.api.accounts.$post(
+        { json },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Attach Bearer token
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to create an account.");
+      }
+
       return await response.json();
     },
     onSuccess: () => {
@@ -23,5 +38,6 @@ export const useCreateAccount = () => {
       toast.error("Failed to create an account.");
     },
   });
+  
   return mutation;
 };

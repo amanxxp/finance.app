@@ -1,6 +1,5 @@
 import { InferRequestType, InferResponseType } from "hono";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-
 import { client } from "@/lib/hono";
 import { toast } from "sonner";
 
@@ -13,9 +12,24 @@ export const useDeleteAccount = (id?: string) => {
 
   const mutation = useMutation<ResponseType, Error>({
     mutationFn: async () => {
-      const response = await client.api.accounts[":id"]["$delete"]({
-        param: { id },
-      });
+      const token = localStorage.getItem("finance-token"); // Get the token dynamically
+
+      // Send the DELETE request with the Authorization header
+      const response = await client.api.accounts[":id"]["$delete"](
+        {
+          param: { id },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Add the Authorization header
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete account.");
+      }
+
       return await response.json();
     },
     onSuccess: () => {
@@ -27,5 +41,6 @@ export const useDeleteAccount = (id?: string) => {
       toast.error("Failed to delete account.");
     },
   });
+
   return mutation;
 };

@@ -6,7 +6,10 @@ export const useGetAccounts = () => {
   const query = useQuery({
     queryKey: ["accounts"],
     queryFn: async () => {
-      const response = await client.api.accounts.$get();
+      const token = localStorage.getItem("finance-token");
+      const response = await client.api.accounts.$get({
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!response.ok) {
         throw new Error("Failed to fetch account");
       }
