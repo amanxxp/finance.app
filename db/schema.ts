@@ -3,6 +3,14 @@ import { createInsertSchema } from "drizzle-zod";
 import { relations } from "drizzle-orm";
 import { z } from "zod";
 
+export const users = pgTable("users", {
+  id: text("id").primaryKey(), // Unique user ID
+  name: text("name").notNull(), // User name
+  email: text("email").unique().notNull(), // Unique email for the user
+  password: text("password").notNull(), // User password
+});
+export const insertUserSchema = createInsertSchema(users);
+
 export const accounts = pgTable("accounts", {
   id: text("id").primaryKey(),
   plaidId: text("plaid_id"),
