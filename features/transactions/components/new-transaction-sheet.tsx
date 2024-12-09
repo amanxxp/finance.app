@@ -44,8 +44,11 @@ export const NewTransactionSheet = () => {
     accountMutation.mutate({
       name,
     });
-
-  const accountOptions = (accountQuery.data ?? []).map((account) => ({
+    interface accounts{
+      id: string;
+      name: string;
+  }
+  const accountOptions = (accountQuery.data ?? []).map((account:accounts) => ({
     label: account.name,
     value: account.id,
   }));
