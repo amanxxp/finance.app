@@ -7,9 +7,17 @@ export const useGetAccounts = () => {
     queryKey: ["accounts"],
     queryFn: async () => {
       const token = localStorage.getItem("finance-token");
-      const response = await client.api.accounts.$get({
-        headers: { Authorization: `Bearer ${token}` },
+      // const response = await client.api.accounts.$get({
+      //   headers: { Authorization: `Bearer ${token}` },
+      // });
+      const response = await fetch("/api/accounts", {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
       });
+      console.log(token);
       if (!response.ok) {
         throw new Error("Failed to fetch account");
       }
