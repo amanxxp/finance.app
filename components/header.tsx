@@ -5,6 +5,7 @@ import { Loader2 } from "lucide-react";
 import { WelcomeMsg } from "./welcomeMsg";
 
 export const Header = () =>{    
+    /*TODO*/
     
     return (
         <header className="bg-gradient-to-b from-blue-700 to-blue-500 px-4 py-10 lg:px-14 pb-46">
