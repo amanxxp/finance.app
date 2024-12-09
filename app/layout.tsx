@@ -35,7 +35,7 @@ export default function RootLayout({
           </QueryProviders>
         </body>
       </html>
-      /*TODO*/
+      {/* /*TODO*/ }
     </ClerkProvider>
   );
 }
