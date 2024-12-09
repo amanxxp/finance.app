@@ -6,7 +6,7 @@ import { differenceInDays, parse, subDays } from "date-fns";
 import { and, desc, eq, gte, lt, lte, sql, sum } from "drizzle-orm";
 import { Hono } from "hono";
 import { string, z } from "zod";
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
@@ -87,15 +87,11 @@ const app = new Hono().get(
           )
         );
     }
-    const [currentPeriod] = await fetchFinancialData(
-      user,
-      startDate,
-      endDate
-    );
+    const [currentPeriod] = await fetchFinancialData(user, startDate, endDate);
     const [lastPeriod] = await fetchFinancialData(
       user,
       lastPeriodStart,
-      lastPeriodEnd,
+      lastPeriodEnd
     );
 
     const incomeChange = calculatePercentageChange(
@@ -158,31 +154,25 @@ const app = new Hono().get(
       .innerJoin(accounts, eq(transactions.accountId, accounts.id))
       .where(
         and(
-          accountId ? 
-            eq(transactions.accountId, accountId) : 
-          undefined,
+          accountId ? eq(transactions.accountId, accountId) : undefined,
           eq(accounts.userId, user),
           gte(transactions.date, startDate),
           lte(transactions.date, endDate)
         )
       )
       .groupBy(transactions.date)
-      .orderBy(transactions.date)
+      .orderBy(transactions.date);
 
-      const days = fillMissingDates(
-        activeDays,
-        startDate,
-        endDate, 
-      );
+    const days = fillMissingDates(activeDays, startDate, endDate);
 
     return c.json({
-      data:{
+      data: {
         remainingAmount: currentPeriod.remaining,
         remainingChange,
         incomeAmount: currentPeriod.income,
         incomeChange,
         expensesAmount: currentPeriod.expensed,
-        expensesChange, 
+        expensesChange,
         categories: finalCategories,
         days,
       },

@@ -13,13 +13,22 @@ export const useGetSummary = () => {
   const query = useQuery({
     queryKey: ["summary", { from, to, accountId }],
     queryFn: async () => {
-      const response = await client.api.summary.$get({
-        query: {
-          from,
-          to,
-          accountId,
+      const token = localStorage.getItem("finance-token");
+      const response = await client.api.summary.$get(
+        {
+          query: {
+            from,
+            to,
+            accountId,
+          },
         },
-      });
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch summary");
