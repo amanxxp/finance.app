@@ -29,12 +29,12 @@ export const useSelectAccount = (): [
   const onCreateAccount = (name: string) => {
     accountMutation.mutate({ name });
   };
-  interface accounts{
-      id: string;
-      name: string;
+  interface accounts {
+    id: string;
+    name: string;
   }
 
-  const accountOptions = (accountQuery.data ?? []).map((account:accounts) => ({
+  const accountOptions = (accountQuery.data ?? []).map((account: accounts) => ({
     label: account.name,
     value: account.id,
   }));
