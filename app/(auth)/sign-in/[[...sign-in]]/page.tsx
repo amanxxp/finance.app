@@ -40,10 +40,11 @@ export default function Page() {
       // Save token and user ID to localStorage
       localStorage.setItem("finance-token", token);
       localStorage.setItem("finance-user_id", user.id);
+      localStorage.setItem("finance-username",user.name);
 
       // Redirect to the dashboard
       alert(`Welcome back ${user.name}! Redirecting to dashboard...`);
-      router.push("/dashboard");
+      router.push("/");
     } catch (error: any) {
       setError(error.message);
     } finally {
