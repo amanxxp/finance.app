@@ -16,9 +16,17 @@ export const useBulkDeleteCategories = () => {
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async (json) => {
-      const response = await client.api.categories["bulk-delete"]["$post"]({
-        json,
-      });
+      const token = localStorage.getItem("finance-token");
+      const response = await client.api.categories["bulk-delete"]["$post"](
+        {
+          json,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Attach Bearer token
+          },
+        }
+      );
       return await response.json();
     },
     onSuccess: () => {

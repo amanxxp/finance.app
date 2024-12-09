@@ -6,12 +6,37 @@ import {
   categories,
   accounts,
 } from "@/db/schema";
-import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { and, eq, gte, inArray, lte, desc, sql } from "drizzle-orm";
 import { createId } from "@paralleldrive/cuid2";
 import { zValidator } from "@hono/zod-validator";
 import { z } from "zod";
 import { parse, subDays } from "date-fns";
+import jwt from "jsonwebtoken";
+const JWT_SECRET = process.env.JWT_SECRET || "secret";
+
+interface decoded {
+  userId: string;
+}
+let decoded: any;
+// Middleware to verify JWT and extract user ID
+const verifyJWT = async (c: any, next: Function) => {
+  const authHeader = c.req.header("Authorization");
+
+  if (!authHeader || !authHeader.startsWith("Bearer")) {
+    return c.json({ error: "Unauthorized - No token provided" }, 401);
+  }
+
+  const token = authHeader.split(" ")[1];
+  console.log(token);
+  try {
+    decoded = jwt.verify(token, JWT_SECRET) as decoded;
+    c.set("userId", decoded.userId); // Attach user ID to the context
+    console.log(decoded.userId);
+    await next();
+  } catch (error) {
+    return c.json({ error: "Unauthorized - Invalid token" }, 401);
+  }
+};
 
 const app = new Hono()
 
@@ -25,13 +50,14 @@ const app = new Hono()
         accountId: z.string().optional(),
       })
     ),
-    clerkMiddleware(),
+    verifyJWT,
     async (c) => {
-      const auth = getAuth(c);
+      // const auth = getAuth(c);
+      const user = decoded.userId;
       const { from, to, accountId } = c.req.valid("query");
-      if (!auth?.userId) {
-        return c.json({ error: "Unauthorized" }, 401);
-      }
+      // if (!auth?.userId) {
+      //   return c.json({ error: "Unauthorized" }, 401);
+      // }
       const defaultTo = new Date();
       const defaultFrom = subDays(defaultTo, 30);
       const startDate = from
@@ -57,7 +83,7 @@ const app = new Hono()
         .where(
           and(
             accountId ? eq(transactions.accountId, accountId) : undefined,
-            eq(accounts.userId, auth.userId),
+            eq(accounts.userId, user),
             gte(transactions.date, startDate),
             lte(transactions.date, endDate)
           )
@@ -69,7 +95,7 @@ const app = new Hono()
   )
   .post(
     "/",
-    clerkMiddleware(),
+    verifyJWT,
     zValidator(
       "json",
       insertTransactionSchema.omit({
@@ -77,11 +103,13 @@ const app = new Hono()
       })
     ),
     async (c) => {
-      const auth = getAuth(c);
+      // const auth = getAuth(c);
+      // const user = decoded.userId;
       const values = c.req.valid("json");
-      if (!auth?.userId) {
-        return c.json({ error: "Unauthorized" }, 401);
-      }
+      // if (!auth?.userId) {
+      //   return c.json({ error: "Unauthorized" }, 401);
+      // }
+
       const [data] = await db
         .insert(transactions)
         .values({
@@ -101,16 +129,17 @@ const app = new Hono()
         id: z.string().optional(),
       })
     ),
-    clerkMiddleware(),
+    verifyJWT,
     async (c) => {
-      const auth = getAuth(c);
+      // const auth = getAuth(c);
+      const user = decoded.userId;
       const { id } = c.req.valid("param");
       if (!id) {
         return c.json({ error: "missing id" }, 400);
       }
-      if (!auth?.userId) {
-        return c.json({ error: "Unauthorized" }, 401);
-      }
+      // if (!auth?.userId) {
+      //   return c.json({ error: "Unauthorized" }, 401);
+      // }
       const [data] = await db
         .select({
           id: transactions.id,
@@ -123,7 +152,7 @@ const app = new Hono()
         })
         .from(transactions)
         .innerJoin(accounts, eq(transactions.accountId, accounts.id))
-        .where(and(eq(transactions.id, auth.userId), eq(accounts.userId, id)));
+        .where(and(eq(transactions.id, user), eq(accounts.userId, id)));
       if (!data) {
         return c.json({ error: "Not found" }, 401);
       }
@@ -132,7 +161,7 @@ const app = new Hono()
   )
   .post(
     "/bulk-create",
-    clerkMiddleware(),
+    verifyJWT,
     zValidator(
       "json",
       z.array(
@@ -142,12 +171,13 @@ const app = new Hono()
       )
     ),
     async (c) => {
-      const auth = getAuth(c);
+      // const auth = getAuth(c);
+      const user = decoded.userId;
       const values = c.req.valid("json");
 
-      if (!auth?.userId) {
-        return c.json({ error: "Unauthorized" }, 401);
-      }
+      // if (!auth?.userId) {
+      //   return c.json({ error: "Unauthorized" }, 401);
+      // }
       const data = await db
         .insert(transactions)
         .values(
@@ -162,7 +192,7 @@ const app = new Hono()
   )
   .post(
     "/bulk-delete",
-    clerkMiddleware(),
+    verifyJWT,
     zValidator(
       "json",
       z.object({
@@ -171,11 +201,12 @@ const app = new Hono()
     ),
 
     async (c) => {
-      const auth = getAuth(c);
+      // const auth = getAuth(c);
+      const user = decoded.userId;
       const values = c.req.valid("json");
-      if (!auth?.userId) {
-        return c.json({ error: "Unauthorized" }, 401);
-      }
+      // if (!auth?.userId) {
+      //   return c.json({ error: "Unauthorized" }, 401);
+      // }
 
       const transactionToDelete = db.$with("transaction_to_delete").as(
         db
@@ -185,7 +216,7 @@ const app = new Hono()
           .where(
             and(
               inArray(transactions.id, values.ids),
-              eq(accounts.userId, auth.userId)
+              eq(accounts.userId, user)
             )
           )
       );
@@ -208,7 +239,7 @@ const app = new Hono()
   )
   .patch(
     "/:id",
-    clerkMiddleware(),
+    verifyJWT,
     zValidator(
       "param",
       z.object({
@@ -222,22 +253,23 @@ const app = new Hono()
       })
     ),
     async (c) => {
-      const auth = getAuth(c);
+      // const auth = getAuth(c);
+      const user = decoded.userId;
       const { id } = c.req.valid("param");
       const values = c.req.valid("json");
       if (!id) {
         return c.json({ error: "Missing id" }, 401);
       }
-      if (!auth?.userId) {
-        return c.json({ error: "Unauthorized" }, 401);
-      }
+      // if (!auth?.userId) {
+      //   return c.json({ error: "Unauthorized" }, 401);
+      // }
 
       const transactionToUpdate = db.$with("transaction_to_update").as(
         db
           .select({ id: transactions.id })
           .from(transactions)
           .innerJoin(accounts, eq(transactions.accountId, accounts.id))
-          .where(and(eq(transactions.id, id), eq(accounts.userId, auth.userId)))
+          .where(and(eq(transactions.id, id), eq(accounts.userId, user)))
       );
 
       const [data] = await db
@@ -257,7 +289,7 @@ const app = new Hono()
   )
   .delete(
     "/:id",
-    clerkMiddleware(),
+    verifyJWT,
     zValidator(
       "param",
       z.object({
@@ -265,21 +297,22 @@ const app = new Hono()
       })
     ),
     async (c) => {
-      const auth = getAuth(c);
+      // const auth = getAuth(c);
+      const user = decoded.userId;
       const { id } = c.req.valid("param");
       if (!id) {
         return c.json({ error: "Missing id" }, 401);
       }
-      if (!auth?.userId) {
-        return c.json({ error: "Unauthorized" }, 401);
-      }
+      // if (!auth?.userId) {
+      //   return c.json({ error: "Unauthorized" }, 401);
+      // }
 
       const transactionToDelete = db.$with("transaction_to_update").as(
         db
           .select({ id: transactions.id })
           .from(transactions)
           .innerJoin(accounts, eq(transactions.accountId, accounts.id))
-          .where(and(eq(transactions.id, id), eq(accounts.userId, auth.userId)))
+          .where(and(eq(transactions.id, id), eq(accounts.userId, user)))
       );
 
       const [data] = await db

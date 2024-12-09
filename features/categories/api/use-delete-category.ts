@@ -13,9 +13,17 @@ export const useDeleteCategory = (id?: string) => {
 
   const mutation = useMutation<ResponseType, Error>({
     mutationFn: async () => {
-      const response = await client.api.categories[":id"]["$delete"]({
-        param: { id },
-      });
+      const token = localStorage.getItem("finance-token");
+      const response = await client.api.categories[":id"]["$delete"](
+        {
+          param: { id },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Attach Bearer token
+          },
+        }
+      );
       return await response.json();
     },
     onSuccess: () => {

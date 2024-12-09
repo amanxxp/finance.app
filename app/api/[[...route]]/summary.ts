@@ -1,17 +1,41 @@
 import { db } from "@/db/drizzle";
 import { accounts, categories, transactions } from "@/db/schema";
 import { calculatePercentageChange, fillMissingDates } from "@/lib/utils";
-import { auth } from "@clerk/nextjs/server";
-import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { zValidator } from "@hono/zod-validator";
 import { differenceInDays, parse, subDays } from "date-fns";
 import { and, desc, eq, gte, lt, lte, sql, sum } from "drizzle-orm";
 import { Hono } from "hono";
 import { string, z } from "zod";
+import jwt from "jsonwebtoken"
 
+const JWT_SECRET = process.env.JWT_SECRET || "secret";
+
+interface decoded {
+  userId: string;
+}
+let decoded: any;
+// Middleware to verify JWT and extract user ID
+const verifyJWT = async (c: any, next: Function) => {
+  const authHeader = c.req.header("Authorization");
+
+  if (!authHeader || !authHeader.startsWith("Bearer")) {
+    return c.json({ error: "Unauthorized - No token provided" }, 401);
+  }
+
+  const token = authHeader.split(" ")[1];
+  console.log(token);
+  try {
+    decoded = jwt.verify(token, JWT_SECRET) as decoded;
+    c.set("userId", decoded.userId); // Attach user ID to the context
+    console.log(decoded.userId);
+    await next();
+  } catch (error) {
+    return c.json({ error: "Unauthorized - Invalid token" }, 401);
+  }
+};
 const app = new Hono().get(
   "/",
-  clerkMiddleware(),
+  verifyJWT,
   zValidator(
     "query",
     z.object({
@@ -21,11 +45,12 @@ const app = new Hono().get(
     })
   ),
   async (c) => {
-    const auth = getAuth(c);
+    // const auth = getAuth(c);
+    const user = decoded.userId;
     const { from, to, accountId } = c.req.valid("query");
-    if (!auth?.userId) {
-      return c.json({ error: "Unauthorized" }, 401);
-    }
+    // if (!auth?.userId) {
+    //   return c.json({ error: "Unauthorized" }, 401);
+    // }
     const defaultTo = new Date();
     const defaultFrom = subDays(defaultTo, 30);
 
@@ -63,12 +88,12 @@ const app = new Hono().get(
         );
     }
     const [currentPeriod] = await fetchFinancialData(
-      auth.userId,
+      user,
       startDate,
       endDate
     );
     const [lastPeriod] = await fetchFinancialData(
-      auth.userId,
+      user,
       lastPeriodStart,
       lastPeriodEnd,
     );
@@ -97,7 +122,7 @@ const app = new Hono().get(
       .where(
         and(
           accountId ? eq(transactions.accountId, accountId) : undefined,
-          eq(accounts.userId, auth.userId),
+          eq(accounts.userId, user),
           lt(transactions.amount, 0),
           gte(transactions.date, startDate),
           lte(transactions.date, endDate)
@@ -136,7 +161,7 @@ const app = new Hono().get(
           accountId ? 
             eq(transactions.accountId, accountId) : 
           undefined,
-          eq(accounts.userId, auth.userId),
+          eq(accounts.userId, user),
           gte(transactions.date, startDate),
           lte(transactions.date, endDate)
         )

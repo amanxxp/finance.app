@@ -16,10 +16,18 @@ export const useEditCategory = (id?: string) => {
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async (json) => {
-      const response = await client.api.categories[":id"]["$patch"]({
-        json,
-        param: { id },
-      });
+      const token = localStorage.getItem("finance-token");
+      const response = await client.api.categories[":id"]["$patch"](
+        {
+          json,
+          param: { id },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Attach Bearer token
+          },
+        }
+      );
       return await response.json();
     },
     onSuccess: () => {

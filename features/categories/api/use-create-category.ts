@@ -11,8 +11,17 @@ export const useCreateCategory = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
+
     mutationFn: async (json) => {
-      const response = await client.api.categories.$post({ json });
+      const token = localStorage.getItem("finance-token");
+      const response = await client.api.categories.$post(
+        { json },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`, // Attach Bearer token
+          },
+        }
+      );
       return await response.json();
     },
     onSuccess: () => {

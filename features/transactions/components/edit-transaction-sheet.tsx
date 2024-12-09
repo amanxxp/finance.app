@@ -45,10 +45,18 @@ export const EditTransactionSheet = () => {
     categoryMutation.mutate({
       name,
     });
-  const categoryOptions = (categoryQuery.data ?? []).map((category) => ({
-    label: category.name,
-    value: category.id,
-  }));
+
+  interface categories {
+    id: string;
+    name: string;
+  }
+
+  const categoryOptions = (categoryQuery.data ?? []).map(
+    (category: categories) => ({
+      label: category.name,
+      value: category.id,
+    })
+  );
 
   const accountQuery = useGetAccounts();
   const accountMutation = useCreateAccount();
@@ -56,12 +64,12 @@ export const EditTransactionSheet = () => {
     accountMutation.mutate({
       name,
     });
-    interface accounts{
-      id: string;
-      name: string;
+  interface accounts {
+    id: string;
+    name: string;
   }
 
-  const accountOptions = (accountQuery.data ?? []).map((account:accounts) => ({
+  const accountOptions = (accountQuery.data ?? []).map((account: accounts) => ({
     label: account.name,
     value: account.id,
   }));

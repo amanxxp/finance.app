@@ -35,8 +35,6 @@ const app = new Hono()
 
   .get("/", verifyJWT, async (c) => {
     const user = decoded.userId;
-    console.log("user is here");
-    console.log(user);
     // if (!user?.userId) {
     //   return c.json({ error: "Unauthorized" }, 401);
     // }
