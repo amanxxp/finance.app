@@ -5,14 +5,25 @@ import { client } from "@/lib/hono";
 import { toast } from "sonner";
 
 type ResponseType = InferResponseType<typeof client.api.transactions.$post>;
-type RequestType = InferRequestType<typeof client.api.transactions.$post>["json"];
+type RequestType = InferRequestType<
+  typeof client.api.transactions.$post
+>["json"];
 
 export const useCreateTransactions = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async (json) => {
-      const response = await client.api.transactions.$post({ json });
+      const token = localStorage.getItem("finance-token");
+      const response = await client.api.transactions.$post(
+        { json },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
       return await response.json();
     },
     onSuccess: () => {

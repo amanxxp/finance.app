@@ -134,6 +134,7 @@ const app = new Hono()
       // const auth = getAuth(c);
       const user = decoded.userId;
       const { id } = c.req.valid("param");
+      console.log("1. ", user);
       if (!id) {
         return c.json({ error: "missing id" }, 400);
       }
@@ -152,7 +153,7 @@ const app = new Hono()
         })
         .from(transactions)
         .innerJoin(accounts, eq(transactions.accountId, accounts.id))
-        .where(and(eq(transactions.id, user), eq(accounts.userId, id)));
+        .where(and(eq(transactions.id, id), eq(accounts.userId, user)));
       if (!data) {
         return c.json({ error: "Not found" }, 401);
       }
@@ -214,10 +215,7 @@ const app = new Hono()
           .from(transactions)
           .innerJoin(accounts, eq(transactions.accountId, accounts.id))
           .where(
-            and(
-              inArray(transactions.id, values.ids),
-              eq(accounts.userId, user)
-            )
+            and(inArray(transactions.id, values.ids), eq(accounts.userId, user))
           )
       );
 
